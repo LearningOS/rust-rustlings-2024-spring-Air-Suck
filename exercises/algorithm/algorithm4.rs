@@ -3,8 +3,7 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
-use std::cmp::Ordering;
+// use std::cmp::Ordering;
 use std::fmt::Debug;
 
 
@@ -51,25 +50,78 @@ where
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
         //TODO
+        //先获取根节点,进入这个分支说明有根节点,需要一直找到为空的时候，在空的位置去建一个节点
+        match self.root{
+            None=>{
+                let Node:Box<TreeNode<T>> = Box::new(TreeNode::<T>::new(value));
+                self.root=Some(Node);
+            }
+            Some(_)=>{
+                Self::insertNode(&mut self.root,value);
+            }
+        }
+    }
+
+    //根据节点插入，需要保证传入的节点不空
+    fn insertNode(node:&mut Option<Box<TreeNode<T>>>,value:T){
+        if let Some(temp)=node{
+            //取出来的temp应该是一个指向树节点的指针
+            if temp.value<value{
+                //说明右边是没有节点的，这个时侯直接插入就好了
+                match temp.right{
+                    None=>{
+                        let Node:Box<TreeNode<T>> = Box::new(TreeNode::<T>::new(value));
+                        temp.right=Some(Node);
+                    }
+                    Some(_)=>{
+                        Self::insertNode(&mut temp.right,value);
+                    }
+                }
+            }else if temp.value>value{
+                match temp.left{
+                    None=>{
+                        let Node:Box<TreeNode<T>> = Box::new(TreeNode::<T>::new(value));
+                        temp.left=Some(Node);
+                    }
+                    Some(_)=>{
+                        Self::insertNode(&mut temp.left,value);
+                    }
+                }
+            }else{
+                //相同的时候就不重复插入了，直接返回就好了
+            }
+        }
     }
 
     // Search for a value in the BST
-    fn search(&self, value: T) -> bool {
+    fn search(&mut self, value: T) -> bool {
         //TODO
-        true
+        match self.root{
+            Some(_)=>{
+                Self::searchNode(&mut self.root,value)
+            }
+            //说明当前节点为空，这个时候就要返回false
+            None=>{
+                false
+            }
+        }
+    }
+
+    fn searchNode(node:&mut Option<Box<TreeNode<T>>>,value:T)->bool{
+        if let Some(temp)=node{
+            if temp.value==value{
+                true
+            }else if temp.value<value{
+                Self::searchNode(&mut temp.right,value)
+            }else {
+                Self::searchNode(&mut temp.left,value)
+            }
+        }else {
+            //此时说明没找到节点，返回false
+            false
+        }
     }
 }
-
-impl<T> TreeNode<T>
-where
-    T: Ord,
-{
-    // Insert a node into the tree
-    fn insert(&mut self, value: T) {
-        //TODO
-    }
-}
-
 
 #[cfg(test)]
 mod tests {
@@ -108,7 +160,6 @@ mod tests {
         
         bst.insert(1);
         bst.insert(1);
-
         
         assert_eq!(bst.search(1), true);
 

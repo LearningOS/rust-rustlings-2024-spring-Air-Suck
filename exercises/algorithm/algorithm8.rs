@@ -2,7 +2,8 @@
 	queue
 	This question requires you to use queues to implement the functionality of the stac
 */
-// I AM NOT DONE
+
+use std::mem::swap;
 
 #[derive(Debug)]
 pub struct Queue<T> {
@@ -52,30 +53,47 @@ impl<T> Default for Queue<T> {
     }
 }
 
-pub struct myStack<T>
+pub struct MyStack<T>
 {
-	//TODO
+	size:usize,
 	q1:Queue<T>,
 	q2:Queue<T>
 }
-impl<T> myStack<T> {
+impl<T> MyStack<T> {
     pub fn new() -> Self {
         Self {
-			//TODO
+			size:0,
 			q1:Queue::<T>::new(),
 			q2:Queue::<T>::new()
         }
     }
     pub fn push(&mut self, elem: T) {
-        //TODO
+        self.size+=1;
+        self.q1.enqueue(elem);
     }
     pub fn pop(&mut self) -> Result<T, &str> {
-        //TODO
-		Err("Stack is empty")
+        if self.is_empty(){
+            Err("Stack is empty")
+        }else{
+            self.size-=1;
+            while let Ok(temp)=self.q1.dequeue(){
+                if self.q1.is_empty(){
+                    //退出循环之后需要修改以下这两个队列的引用
+                    swap(&mut self.q1,&mut self.q2);
+                    return Ok(temp);
+                }else{
+                    self.q2.enqueue(temp);
+                }
+            }
+            Err("err")
+        }
     }
     pub fn is_empty(&self) -> bool {
-		//TODO
-        true
+		if self.size==0{
+            true
+        }else{
+            false
+        }
     }
 }
 
@@ -85,7 +103,7 @@ mod tests {
 	
 	#[test]
 	fn test_queue(){
-		let mut s = myStack::<i32>::new();
+		let mut s = MyStack::<i32>::new();
 		assert_eq!(s.pop(), Err("Stack is empty"));
         s.push(1);
         s.push(2);

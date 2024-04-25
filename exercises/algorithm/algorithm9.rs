@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -23,6 +22,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
+            //这里先塞进去了一个元素，相当于是把0占掉了
             items: vec![T::default()],
             comparator,
         }
@@ -37,7 +37,22 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        //实际上就是先将元素插入，然后再重新构建就好了
+        self.items.push(value);
+        self.count+=1;
+        //首先需要找到最后一个非叶子节点（实际上就是最后一个节点的父节点）
+        let mut parentIndex =self.parent_idx(self.count);
+        let mut childIndex:usize;
+        //如果是小根堆返回true的话就表示当前父节点比子节点小，也就是符合小根堆条件（大根堆也是同理）
+        while parentIndex>=1{
+            childIndex=self.smallest_child_idx(parentIndex);
+            if (self.comparator)(&self.items[parentIndex],&self.items[childIndex]){
+                parentIndex-=1;
+            }else{
+                //这个时候就说明当前是不满足条件的，需要将该子结点上移
+                self.items.swap(parentIndex,childIndex);
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +72,25 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+		//就当作是返回当前节点的孩子节点的大小吧，小根堆返回小的，大根堆返回大的
+        if self.children_present(idx){
+            let left =&self.items[self.left_child_idx(idx)];
+            //注意这里可能右孩子不存在
+            if self.right_child_idx(idx)>self.count{
+                return self.left_child_idx(idx);
+            }else{
+                let right=&self.items[self.right_child_idx(idx)];
+                //如果这个函数返回的是true，不论是大根堆和还是小根堆都是返回left（因为大根堆在left大的时候才会返回true，小根堆在left小的时候才会返回true）
+                if (self.comparator)(left,right){
+                    return self.left_child_idx(idx);
+                }else{
+                    return self.right_child_idx(idx);
+                }
+            }
+        }else{
+            //说明当前节点是没有孩子的，直接返回0吧
+            return 0;
+        }
     }
 }
 
@@ -85,7 +117,30 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+        if self.is_empty(){
+            None
+        }else{
+            //将根元素根尾部元素互换
+            self.items.swap(1,self.count);
+            let temp=self.items.pop();
+            self.count-=1;
+            //重新调整堆
+            //首先需要找到最后一个非叶子节点（实际上就是最后一个节点的父节点）
+            let mut parentIndex =self.parent_idx(self.count);
+            let mut childIndex:usize;
+            //如果是小根堆返回true的话就表示当前父节点比子节点小，也就是符合小根堆条件（大根堆也是同理）
+            while parentIndex>=1{
+                childIndex=self.smallest_child_idx(parentIndex);
+                if (self.comparator)(&self.items[parentIndex],&self.items[childIndex]){
+                    parentIndex-=1;
+                }else{
+                    //这个时候就说明当前是不满足条件的，需要将该子结点上移
+                    self.items.swap(parentIndex,childIndex);
+                }
+            }
+            //调整结束将temp封装成Option返回
+            temp
+        }
     }
 }
 

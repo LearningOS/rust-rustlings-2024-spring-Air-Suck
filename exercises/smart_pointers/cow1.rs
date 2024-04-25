@@ -12,8 +12,6 @@
 //
 // Execute `rustlings hint cow1` or use the `hint` watch subcommand for a hint.
 
-// I AM NOT DONE
-
 use std::borrow::Cow;
 
 fn abs_all<'a, 'b>(input: &'a mut Cow<'b, [i32]>) -> &'a mut Cow<'b, [i32]> {
@@ -37,6 +35,7 @@ mod tests {
         let slice = [-1, 0, 1];
         let mut input = Cow::from(&slice[..]);
         match abs_all(&mut input) {
+            //这里因为发生了克隆(也就是在执行函数的时候对slice进行了一次克隆)，所以返回的应该是一个独占，也就是own
             Cow::Owned(_) => Ok(()),
             _ => Err("Expected owned value"),
         }
@@ -48,7 +47,9 @@ mod tests {
         let slice = [0, 1, 2];
         let mut input = Cow::from(&slice[..]);
         match abs_all(&mut input) {
-            // TODO
+            //这里就没有对slice进行克隆
+            Cow::Borrowed(_) => Ok(()),
+            _ => Err("Expected owned value"),
         }
     }
 
@@ -60,7 +61,10 @@ mod tests {
         let slice = vec![0, 1, 2];
         let mut input = Cow::from(slice);
         match abs_all(&mut input) {
-            // TODO
+            //此时cow直接拥有slice，这个时候因为是直接拥有的，所以返回的并不是一个引用类型，而是一个独占类型，这是和上面不一样的
+            //上面的相当于是返回了一个slice的引用，所以返回值是一个Borrow，但是这里本身就已经拥有了所有权，所以是返回的是一个独占
+            Cow::Owned(_) => Ok(()),
+            _ => Err("Expected owned value"),
         }
     }
 
@@ -72,7 +76,8 @@ mod tests {
         let slice = vec![-1, 0, 1];
         let mut input = Cow::from(slice);
         match abs_all(&mut input) {
-            // TODO
+            Cow::Owned(_) => Ok(()),
+            _ => Err("Expected owned value"),
         }
     }
 }

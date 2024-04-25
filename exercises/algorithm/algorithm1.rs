@@ -2,11 +2,11 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
+//这个保证了指针不为空
 use std::ptr::NonNull;
-use std::vec::*;
+// use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -25,17 +25,19 @@ impl<T> Node<T> {
 #[derive(Debug)]
 struct LinkedList<T> {
     length: u32,
+    //头指针
     start: Option<NonNull<Node<T>>>,
+    //尾指针
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T:std::cmp::PartialOrd> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T:std::cmp::PartialOrd> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -71,12 +73,57 @@ impl<T> LinkedList<T> {
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut list_c = Self::new();
+        let mut tempA=list_a.start;
+        let mut tempB=list_b.start;
+        //说明有链表为空
+        if tempA==None||tempB==None{
+            if tempA==None&&tempB==None{
+                return Self::new();
+            }else if tempA==None{
+                return list_b;
+            }else{
+                return list_a;
+            }
         }
+        while tempA!=None&&tempB!=None{
+            if let Some(tempa)=tempA {
+                if let Some(tempb)=tempB{
+                    //到这里说明两个都不是空
+                    unsafe{
+                        if (*(tempa.as_ptr())).val<(*(tempb.as_ptr())).val{
+                                let boxa=Box::from_raw(tempa.as_ptr());
+                                list_c.add(boxa.val);
+                                tempA=(*(tempa.as_ptr())).next;
+                        }else if (*(tempa.as_ptr())).val>=(*(tempb.as_ptr())).val{
+                                let boxb=Box::from_raw(tempb.as_ptr());
+                                list_c.add(boxb.val);
+                                tempB=(*(tempb.as_ptr())).next;
+                        }
+                    }
+                }
+            }
+        }
+        //退出循环说明至少有一个链表被遍历完了
+        while tempA!=None{
+            if let Some(tempa)=tempA{
+                unsafe{
+                    let boxa=Box::from_raw(tempa.as_ptr());
+                    list_c.add(boxa.val);
+                    tempA=(*(tempa.as_ptr())).next;
+                }
+            }
+        }
+        while tempB!=None{
+            if let Some(tempb)=tempB{
+                unsafe{
+                    let boxb=Box::from_raw(tempb.as_ptr());
+                    list_c.add(boxb.val);
+                    tempB=(*(tempb.as_ptr())).next;
+                }
+            }
+        }
+        list_c
 	}
 }
 
